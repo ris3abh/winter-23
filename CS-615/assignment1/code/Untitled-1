@@ -32,6 +32,7 @@ class Layer (ABC) :
 
 class inputLayer(Layer):
     def __init__(self, dataIn):
+        super().__init__()
         self.meanX = np.mean(dataIn)
         self.stdX = np.std(dataIn)
 
@@ -49,6 +50,7 @@ class inputLayer(Layer):
 
 class  LinearLayer(Layer):
     def __init__(self, dataIn):
+        super().__init__()
         self.dataIn = dataIn
         self.W = np.random.randn(self.dataIn, self.dataIn)
         self.b = np.zeros(self.dataIn)
@@ -67,7 +69,7 @@ class  LinearLayer(Layer):
 
 class logisticSigmoidLayer(Layer):
     def __init__(self):
-        pass
+        super().__init__()
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
@@ -84,7 +86,7 @@ class logisticSigmoidLayer(Layer):
 
 class RelULayer(Layer):
     def __init__(self) -> None:
-        pass
+        super().__init__()
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
@@ -94,7 +96,7 @@ class RelULayer(Layer):
 
 class SoftMaxLayer(Layer):
     def __init__(self, dataIn):
-        pass
+        super().__init__()
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
@@ -111,7 +113,7 @@ class SoftMaxLayer(Layer):
 
 class tanHLayer(Layer):
     def __init__(self, dataIn):
-        pass
+        super().__init__()
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
@@ -127,6 +129,7 @@ class tanHLayer(Layer):
 
 class fullyConnectedLayer(Layer):
     def __init__(self, sizeIn, sizeOut):
+        super().__init__()
         self.sizeIn = sizeIn
         self.sizeOut = sizeOut
         self.W = self.W = np.random.randn(self.sizeIn, self.sizeOut) 
