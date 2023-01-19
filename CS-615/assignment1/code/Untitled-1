@@ -1,0 +1,160 @@
+from abc import ABC, abstractmethod 
+import numpy as np
+
+class Layer (ABC) :
+    def init (self): 
+        self . prevIn = [] 
+        self. prevOut=[]
+
+    def setPrevIn(self ,dataIn): 
+        self . prevIn = dataIn
+
+    def setPrevOut( self , out ): 
+        self . prevOut = out
+
+    def getPrevIn( self ):
+        return self . prevIn
+
+    def getPrevOut( self ):
+        return self . prevOut
+
+    @abstractmethod
+    def forward(self ,dataIn):
+        pass
+
+    @abstractmethod
+    def gradient(self):
+        pass
+
+    @abstractmethod
+    def backward( self , gradIn ):
+        pass
+
+class inputLayer(Layer):
+    def __init__(self, dataIn):
+        self.meanX = np.mean(dataIn, axis = 0)
+        self.stdX = np.std(dataIn, axis = 0)
+    
+    def forward(self, dataIn):
+        return (dataIn - self.meanX)/self.stdX
+
+    def gradient(self):
+        pass
+
+    def backward(self,gradIn):
+        pass
+    
+class  LinearLayer(Layer):
+    def __init__(self, dataIn):
+        self.dataIn = dataIn
+        self.W = np.random.randn(self.dataIn, self.dataIn)
+        self.b = np.zeros(self.dataIn)
+
+    def forward(self, dataIn):
+        self.setPrevIn(dataIn)
+        return np.dot(dataIn, self.W) + self.b
+
+    def gradient(self):
+        pass
+
+    def backward(self,gradIn):
+        pass
+
+class logisticSigmoidLayer(Layer):
+    def __init__(self):
+        pass
+
+    def forward(self, dataIn):
+        self.setPrevIn(dataIn)
+        return 1/(1 + np.exp(-dataIn))
+
+    def gradient(self):
+        pass
+
+    def backward(self, gradIn):
+        pass
+
+class ReLULayer(Layer):
+    def __init__(self, dataIn):
+        pass
+
+    def forward(self, dataIn):
+        self.setPrevIn(dataIn)
+        return np.maximum(0, dataIn)
+
+    def gradient(self):
+        pass
+
+    def backward(self, gradIn):
+        pass
+
+class SoftMaxLayer(Layer):
+    def __init__(self, dataIn):
+        pass
+
+    def forward(self, dataIn):
+        self.setPrevIn(dataIn)
+        exps = np.exp(dataIn - np.max(dataIn))
+        return exps / np.sum(exps, axis=1, keepdims=True)
+
+    def gradient(self):
+        pass
+
+    def backward(self, gradin):
+        pass
+
+class tanHLayer(Layer):
+    def __init__(self, dataIn):
+        pass
+
+    def forward(self, dataIn):
+        self.setPrevIn(dataIn)
+        return np.tanh(dataIn)
+
+    def gradient(self):
+        pass
+
+    def backward(self, dataIn):
+        pass
+
+class fullyConnectedLayer(Layer):
+    def __init__(self, sizeIn, sizeOut):
+        self.sizeIn = sizeIn
+        self.sizeOut = sizeOut
+        self.W = self.W = np.random.randn(self.sizeIn, self.sizeOut) 
+        self.b = np.zeros(self.sizeIn)
+
+    def getWeights(self, W):
+        return self.W 
+
+    def getBias(self, b):
+        return self.b
+
+    def forward(self, dataIn):
+        self.setPrevIn(dataIn)
+        return np.dot(self.W , dataIn) +self.b
+
+    def gradient(self):
+        pass
+
+    def backward(self, gradIn):
+        pass
+
+X = np.array([[1,2,3,4],[5,6,7,8]])
+
+
+inputLayer = inputLayer(X)
+fullyConnectedLayer = fullyConnectedLayer(4, 2)
+logisticSigmoidLayer = logisticSigmoidLayer()
+
+inputLayer.setPrevOut(X)
+fullyConnectedLayer.setPrevIn(inputLayer.forward(X))
+fullyConnectedLayer.setPrevOut(fullyConnectedLayer.forward(X))
+logisticSigmoidLayer.setPrevIn(fullyConnectedLayer.forward(X))
+logisticSigmoidLayer.setPrevOut(logisticSigmoidLayer.forward(X))
+
+print(logisticSigmoidLayer.getPrevOut())
+
+
+
+
