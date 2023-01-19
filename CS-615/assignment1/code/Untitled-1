@@ -34,16 +34,19 @@ class inputLayer(Layer):
     def __init__(self, dataIn):
         self.meanX = np.mean(dataIn, axis = 0)
         self.stdX = np.std(dataIn, axis = 0)
-    
+
     def forward(self, dataIn):
-        return (dataIn - self.meanX)/self.stdX
+        self.prevIn = dataIn
+        dataOut =  (dataIn - self.meanX)/self.stdX
+        self.setprevOut = dataOut
+        return dataOut
 
     def gradient(self):
         pass
 
-    def backward(self,gradIn):
+    def backward(self, gradIn):
         pass
-    
+
 class  LinearLayer(Layer):
     def __init__(self, dataIn):
         self.dataIn = dataIn
@@ -52,7 +55,9 @@ class  LinearLayer(Layer):
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
-        return np.dot(dataIn, self.W) + self.b
+        dataOut =  np.dot(dataIn, self.W) + self.b
+        self.setprevOut = dataOut
+        return dataOut
 
     def gradient(self):
         pass
@@ -66,7 +71,9 @@ class logisticSigmoidLayer(Layer):
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
-        return 1/(1 + np.exp(-dataIn))
+        dataOut =  1/(1 + np.exp(-dataIn))
+        self.setPrevOut = dataOut
+        return dataOut
 
     def gradient(self):
         pass
@@ -74,19 +81,16 @@ class logisticSigmoidLayer(Layer):
     def backward(self, gradIn):
         pass
 
-class ReLULayer(Layer):
-    def __init__(self, dataIn):
+
+class RelULayer(Layer):
+    def __init__(self) -> None:
         pass
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
-        return np.maximum(0, dataIn)
-
-    def gradient(self):
-        pass
-
-    def backward(self, gradIn):
-        pass
+        dataOut = np.maximum(dataIn, 0)
+        self.getPrevOut = dataOut
+        return dataOut
 
 class SoftMaxLayer(Layer):
     def __init__(self, dataIn):
@@ -95,7 +99,9 @@ class SoftMaxLayer(Layer):
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
         exps = np.exp(dataIn - np.max(dataIn))
-        return exps / np.sum(exps, axis=1, keepdims=True)
+        dataOut = exps / np.sum(exps, axis=1, keepdims=True)
+        self.setPrevOut(dataOut)
+        return dataOut
 
     def gradient(self):
         pass
@@ -109,7 +115,9 @@ class tanHLayer(Layer):
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
-        return np.tanh(dataIn)
+        dataOut =  np.tanh(dataIn)
+        self.setPrevOut(dataOut)
+        return dataOut
 
     def gradient(self):
         pass
@@ -132,7 +140,9 @@ class fullyConnectedLayer(Layer):
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
-        return np.dot(self.W , dataIn) +self.b
+        dataOut =  np.dot(self.W , dataIn) +self.b
+        self.setPrevOut(dataOut)
+        return dataOut
 
     def gradient(self):
         pass
