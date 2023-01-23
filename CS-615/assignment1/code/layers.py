@@ -34,8 +34,8 @@ class Layer (ABC) :
 class inputLayer(Layer):
     def __init__(self, dataIn):
         super().__init__()
-        self.meanX = np.mean(dataIn)
-        self.stdX = np.std(dataIn)
+        self.meanX = np.mean(dataIn, axis=0)
+        self.stdX = np.std(dataIn, axis=0)
 
     def forward(self, dataIn):
         self.prevIn = dataIn
@@ -110,8 +110,7 @@ class SoftMaxLayer(Layer):
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
-        exps = np.exp(dataIn - np.max(dataIn))
-        dataOut = exps / np.sum(exps, axis=1, keepdims=True)
+        dataOut = np.exp(dataIn)/np.sum(np.exp(dataIn), axis=0, keepdims=True)
         self.setPrevOut(dataOut)
         return dataOut
 
