@@ -1,0 +1,233 @@
+\title{CS 615 - Deep Learning}
+\author{
+Assignment 2 - Objective Functions and Gradients\\
+Winter 2023
+}
+\date{}
+\documentclass[12pt]{article}
+\usepackage[margin=0.7in]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{comment}
+\usepackage{amsmath}
+\usepackage{multirow}  %% To have multirows in table
+\includecomment{versionB}
+\usepackage{listings}
+%\excludecomment{versionB}
+
+%\usepackage{xcolor}
+%\newcommand\red[1]{\textcolor{red}{#1}} % add \red{} command 
+
+\begin{document}
+\maketitle
+
+
+\section*{Introduction}
+In this assignment we'll implement our output/objective modules and add computing the gradients to each of our modules.
+
+\section*{Allowable Libraries/Functions}
+Recall that you \textbf{cannot} use any ML functions to do the training or evaluation for you.  Using basic statistical and linear algebra function like \emph{mean}, \emph{std}, \emph{cov} etc.. is fine, but using ones like \emph{train} are not. Using any ML-related functions, may result in a \textbf{zero} for the programming component.  In general, use the ``spirit of the assignment'' (where we're implementing things from scratch) as your guide, but if you want clarification on if can use a particular function, DM the professor on slack.
+
+
+\section*{Grading}
+\textbf{Do not modify the public interfaces of any code skeleton given to you. Class and variable names should be exactly the same as the skeleton code provided, and no default parameters should be added or removed.}
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+Theory & 20pts\\
+Testsing fully-connected and activation layers' gradient methods & 40pts\\
+Testing objective layers' loss computations and gradients & 40pts\\
+\hline
+\textbf{TOTAL} & 100pts \\
+\hline
+\end{tabular}
+\caption{Grading Rubric}
+\end{center}
+\end{table}
+
+
+
+\newpage
+\section{Theory}
+\begin{enumerate}
+\item (10 points) Given $H=\begin{bmatrix}1 & 2 & 3\\ 4 & 5 & 6 \end{bmatrix}$ as an input, compute the gradients of the output with respect to this input for the following activation layers.  Show your answer in \textbf{tensor form} by having a Jacobian matrix for each observation.
+	\begin{enumerate}
+	\item A ReLu layer
+	\item A Softmax layer
+	\item A Sigmoid Layer
+	\item A Tanh Layer
+	\item A Linear Layer
+	\end{enumerate}
+
+\item (2 points) Given $H=\begin{bmatrix}1 & 2 & 3\\ 4 & 5 & 6\end{bmatrix}$ as an input, compute the gradient of the output a fully connected layer with regards to this input if the fully connected layer has weights of $W=\begin{bmatrix}
+1 & 2\\
+3 & 4\\
+5 & 6\\
+\end{bmatrix}$  as biases $b=\begin{bmatrix}-1 & 2\end{bmatrix}$.
+
+\item (2 points) Given target values of $Y=\begin{bmatrix}
+0\\
+1\\
+\end{bmatrix}$ and estimated values of $\hat{Y}=\begin{bmatrix}0.2\\0.3\end{bmatrix}$ compute the loss for:
+\begin{enumerate}
+\item A squared error objective function
+\item A log loss (negative log likelihood) objective function)
+\end{enumerate}
+
+\item (1 point) Given target \emph{distributions} of $Y=\begin{bmatrix}
+1 & 0 & 0\\
+0 & 1 & 0\\
+\end{bmatrix}$ and estimated distributions of $\hat{Y}=\begin{bmatrix}
+0.2 & 0.2 & 0.6\\
+0.2 & 0.7 & 0.1\\
+\end{bmatrix}$ compute the cross entropy loss.
+
+\item (4 points) Given target values of $Y=\begin{bmatrix}
+0\\
+1\\
+\end{bmatrix}$ and estimated values of $\hat{Y}=\begin{bmatrix}0.2\\0.3\end{bmatrix}$ compute the gradient of the following objective functions with regards to their input, $\hat{Y}$:
+\begin{enumerate}
+\item A squared error objective function
+\item A log loss (negative log likelihood) objective function)
+\end{enumerate}
+
+\item (1 point) Given target \emph{distributions} of $Y=\begin{bmatrix}
+1 & 0 & 0\\
+0 & 1 & 0\\
+\end{bmatrix}$ and estimated distributions of $\hat{Y}=\begin{bmatrix}
+0.2 & 0.2 & 0.6\\
+0.2 & 0.7 & 0.1\\
+\end{bmatrix}$ compute the gradient of the cross entropy loss function, with regard to the input distributions $\hat{Y}$.
+
+\end{enumerate}
+
+\newpage
+\section{Update Your Codebase}
+In this assignment you'll add gradient methods to your existing fully-connected layer and activation functions, and implement your objective functions.
+
+
+\subsection*{Adding Gradient Methods}
+Implement \emph{gradient} methods for your fully connected layer, and all of your activation layers.  When applicable, you may decide whether a class' gradient method returns a matrix or a tensor.  The prototype of these methods should be:\\
+
+\begin{lstlisting}[language=Python]
+ #Input: None
+ #Output:  Either an N by D matrix or an N by (D by D) tensor
+ def gradient(self):
+    #TODO
+\end{lstlisting}
+
+
+\subsection*{Adding Objective Layers}
+Now let's implement a module for each of our objective functions.  These modules should implement (at least) two methods:
+\begin{itemize}
+\item \emph{eval} - This method takes two explicit parameters, the target values and the incoming/estimated values,  and computes and returns the loss (as a single float value) according to the module's objective function.
+\item \emph{gradient} - This method takes the same two explicit parameters as the \emph{eval} method and computes and returns the gradient of the objective function using those parameters.
+\end{itemize}
+
+\noindent
+Implement these for the following objective functions:
+\begin{itemize}
+\item Squared Error as \emph{SquaredError}
+\item Log Loss (negative log likelihood)  as \emph{LogLoss}
+\item Cross Entropy as \emph{CrossEntropy}
+\end{itemize}
+
+\noindent
+Your public interface is:
+
+\begin{lstlisting}[language=Python]
+class XXX():
+  #Input: Y is an N by K matrix of target values.
+  #Input: Yhat is an N by K matrix of estimated values.
+  #Output:  A single floating point value.
+  def eval(self,Y, Yhat):
+    #TODO
+
+  #Input: Y is an N by K matrix of target values.
+  #Input: Yhat is an N by K matrix of estimated values.
+  #Output:  An N by K matrix.
+  def gradient(self,Y, Yhat):
+    #TODO
+\end{lstlisting}
+
+\newpage
+\section{Testing the gradient methods}
+Let's test our gradient methods!  We'll use the same data from the theory component.\\
+
+\noindent
+Write a script that:
+\begin{enumerate}
+\item Instantiates the fully-connected layer with three inputs and two outputs.
+\item Instantiates each activation layer.
+\item Sets the weights and biases of your fully-connected layer to $W=\begin{bmatrix}
+1 & 2\\
+3 & 4\\
+5 & 6\\
+\end{bmatrix}$ and $b=\begin{bmatrix}-1 & 2\end{bmatrix}$, respectively.
+\item Passes the data $H=\begin{bmatrix}1 & 2 & 3\\ 4 & 5 & 6 \end{bmatrix}$ through the \emph{forward} method of each aforementioned layer.
+\item Calls each aforementioned layer's \emph{gradient} method, printing its output.
+\end{enumerate}
+
+
+\newpage
+\section{Testing the Objective Layers}
+Finally we'll test the objective layers.\\
+
+\noindent
+Write a script that:
+\begin{itemize}
+\item Instantiates each objective function.
+\item Evaluates the objective functions using the provide estimate and target value(s), printing their output.
+\item Runs the objective functions' \emph{gradient} method given the estimated and target value(s).
+\end{itemize}
+
+\noindent
+For this you'll use the following target ($Y$) and estimated ($\hat{Y}$) values for the \emph{squared error} and \emph{log loss} objective functions:
+
+ $$Y=\begin{bmatrix}
+0\\
+1\\
+\end{bmatrix}$$ 
+
+$$\hat{Y}=\begin{bmatrix}0.2\\0.3\end{bmatrix}$$
+ 
+\noindent
+and the following for the cross-entropy objective function:
+$$Y=\begin{bmatrix}
+1 & 0 & 0\\
+0 & 1 & 0\\
+\end{bmatrix}$$
+
+$$\hat{Y}=\begin{bmatrix}
+0.2 & 0.2 & 0.6\\
+0.2 & 0.7 & 0.1\\
+\end{bmatrix}$$
+
+\noindent
+In your report provide the evaluation of the objective function and the gradient returned by each of these output layers.
+
+\newpage
+\section*{Submission}
+For your submission, upload to Blackboard a single zip file containing:
+
+\begin{enumerate}
+\item PDF Writeup
+\item Source Code
+\item readme.txt file
+\end{enumerate}
+
+\noindent
+The readme.txt file should contain information on how to run your code to reproduce results for each part of the assignment.\\
+
+\noindent
+The PDF document should contain the following:
+
+\begin{enumerate}
+\item Part 1:  Your solutions to the theory question
+\item Part 2:  Nothing
+\item Part 3: The gradient of the output of each layer with respect to its input, where the provided $H$ is the input.
+\item Part 4: The loss of each objective layer using the provided $Y$ and $\hat{Y}$ as well as the gradient of the objective functions, with regards to their input ($\hat{Y}$). 
+\end{enumerate}
+\end{document}
+

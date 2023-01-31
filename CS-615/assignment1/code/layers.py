@@ -110,7 +110,7 @@ class SoftMaxLayer(Layer):
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
-        dataOut = np.exp(dataIn)/np.sum(np.exp(dataIn), axis=0, keepdims=True)
+        dataOut = np.exp(dataIn)/np.sum(np.exp(dataIn), axis=1, keepdims=True)
         self.setPrevOut(dataOut)
         return dataOut
 
