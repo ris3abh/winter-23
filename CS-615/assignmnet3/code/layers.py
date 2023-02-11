@@ -41,14 +41,15 @@ class inputLayer(Layer):
         self.setPrevIn(dataIn)
         dataOut = (dataIn - self.meanX)/self.stdX
         self.setPrevOut(dataOut)
-        return dataOut
+        return self.getPrevOut()
 
     def gradient(self):
         pass
 
     def backward(self, gradIn):
-        return gradIn
+        return gradIn*self.gradient()
 
+## diagonal gradient, so hadamarts product
 class LinearLayer(Layer):
     def __init__(self):
         super().__init__()
@@ -57,21 +58,18 @@ class LinearLayer(Layer):
         self.setPrevIn(dataIn)
         dataOut =  dataIn
         self.setPrevOut(dataOut)
-        return dataOut
+        return self.getPrevOut()
 
-    ## gradient of linear layer is matrices of identity matrix with shape NxKxK
     def gradient(self):
         jacobian = np.zeros((self.getPrevOut().shape[0], self.getPrevOut().shape[1], self.getPrevOut().shape[1]))
         for i in range(self.getPrevOut().shape[0]):
             jacobian[i] = np.identity(self.getPrevOut().shape[1])
-        ## since the activation functions gradient were diagonal matrices, we can turn them into single observation’s diagonal in a row, 
-        ## then we can reduce the size of the gradient to ∈ ℝ 1×𝐾 for a single observation, and ∈ ℝ 𝑁×𝐾 for multiple observations.
-        ## for now lets keep this as a tensor
         return jacobian
         
     def backward(self, gradIn):
         pass
 
+## diagonal gradient, so hadamarts product
 class ReLULayer(Layer):
     def __init__(self):
         super().__init__()
@@ -80,7 +78,7 @@ class ReLULayer(Layer):
         self.setPrevIn(dataIn)
         dataOut = np.maximum(0, dataIn)
         self.setPrevOut(dataOut)
-        return dataOut
+        return self.getPrevOut()
 
     def gradient(self):
         prevOut = self.getPrevOut()
@@ -94,8 +92,9 @@ class ReLULayer(Layer):
         return jacobian
 
     def backward(self, gradIn):
-        pass
+        return np.multiply(gradIn, self.gradient())
 
+## non diagonal gradient, so tensor product
 class SoftmaxLayer(Layer):
     def __init__(self):
         super().__init__()
@@ -104,7 +103,7 @@ class SoftmaxLayer(Layer):
         self.setPrevIn(dataIn)
         dataOut = np.exp(dataIn - np.max(dataIn))/np.sum(np.exp(dataIn - np.max(dataIn)), axis=1, keepdims=True)
         self.setPrevOut(dataOut)
-        return dataOut
+        return self.getPrevOut()
         
     def gradient(self):
         prevOut = self.getPrevOut()
@@ -124,8 +123,9 @@ class SoftmaxLayer(Layer):
             
 
     def backward(self, gradIn):
-        pass
+        return np.tensordot(gradIn, self.gradient(), axes=0)
 
+## diagonal gradient, so hadamarts product
 class LogisticSigmoid(Layer):
     def __init__(self):
         super().__init__()
@@ -134,9 +134,8 @@ class LogisticSigmoid(Layer):
         self.setPrevIn(dataIn)
         dataOut = 1/(1+np.exp(-dataIn))
         self.setPrevOut(dataOut)
-        return dataOut
+        return self.getPrevOut()
 
-    
     def gradient(self):
         prevOut = self.getPrevOut()
         jacobian = np.zeros((prevOut.shape[0], prevOut.shape[1], prevOut.shape[1]))
@@ -157,8 +156,9 @@ class LogisticSigmoid(Layer):
         # return self.getPrevOut() * (1 - self.getPrevOut())
 
     def backward(self, gradIn):
-        pass
+        return np.multiply(gradIn, self.gradient())
 
+## diagonal gradient, so hadamarts product
 class TanhLayer(Layer):
     def __init__(self):
         super().__init__()
@@ -167,7 +167,7 @@ class TanhLayer(Layer):
         self.setPrevIn(dataIn)
         dataOut = np.tanh(dataIn)
         self.setPrevOut(dataOut)
-        return dataOut
+        return self.getPrevOut()
 
     def gradient(self):
         prevOut = self.getPrevOut()
@@ -187,33 +187,28 @@ class TanhLayer(Layer):
         # return 1 - np.square(self.getPrevOut())
 
     def backward(self, gradIn):
-        pass
+        return np.multiply(gradIn, self.gradient())
 
+## for the fully connected layer, matrix multiplication is used to calculate the output of the backpropagation
 class fullyConnectedLayer(Layer):
     def __init__(self, sizeIn, sizeOut) -> None:
         super().__init__()
         self.sizeIn = sizeIn
         self.sizeOut = sizeOut
-        self.getWeights()
-        self.getBias()
+        self.weights = np.random.uniform(low=-0.0001, high=0.0001, size = (sizeIn, sizeOut))
+        self.baises = np.random.uniform(low=-0.0001, high=0.0001, size = (1, sizeOut))
 
     def getWeights(self):
-        self.weights = np.random.randn(self.sizeIn, self.sizeOut)
+        return self.weights
 
-    def setWeights(self, weights):
-        self.weights = weights
-
-    def getBias(self):
-        self.bias = np.random.randn(self.sizeOut)
-
-    def setBiases(self, biases):
-        self.bias = biases
+    def getBaises(self):
+        return self.baises
 
     def forward(self, dataIn):
         self.setPrevIn(dataIn)
-        dataOut = np.dot(dataIn, self.weights) + self.bias
+        dataOut = np.dot(dataIn, self.weights) + self.baises
         self.setPrevOut(dataOut)
-        return dataOut
+        return self.getPrevOut()
 
     def gradient(self):
         prevOut = self.getPrevOut()
@@ -223,10 +218,17 @@ class fullyConnectedLayer(Layer):
             jacobian.append(self.weights.T)
         return np.array(jacobian)
 
-        #return np.array([self.weights.T for i in range(len(self.getPrevOut()))])
+    def update_weights(self, gradIn, lr):
+        self.dj_dw = self.getPrevIn().T.dot(gradIn)/gradIn.shape[0]
+        self.dj_db = np.sum(gradIn, axis=0, keepdims=True)/gradIn.shape[0]
+        ## avoiding invalid value encountered in subtraction error at runtime by clipping the values
+        self.dj_dw = np.clip(self.dj_dw, -0.0001, 0.0001)
+        self.dj_db = np.clip(self.dj_db, -0.0001, 0.0001)
+        self.weights = self.weights - (lr*self.dj_dw)
+        self.baises = self.baises - (lr*self.dj_db)
 
     def backward(self, gradIn):
-        pass
+        return np.dot(gradIn, self.gradient())
 
 class SquaredErrorLoss():
     def __init__(self):
@@ -237,6 +239,8 @@ class SquaredErrorLoss():
     def eval(self, y, yhat):
         self.y = y
         self.yhat = yhat
+        ## avoiding overflow error at runtime by clipping the values
+        yhat = np.clip(yhat, 0.0000001, 1 - 0.0000001)
         return np.mean((y - yhat)*(y - yhat))
 
     def gradient(self, y, yhat):
@@ -277,12 +281,4 @@ class CrossEntropyLoss():
         return -np.divide(y, yhat + epsilon)
 
 
-
-
-
-
-
-
-        
-
-
+## end of layers
