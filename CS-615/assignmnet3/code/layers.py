@@ -222,8 +222,8 @@ class fullyConnectedLayer(Layer):
         self.dj_dw = self.getPrevIn().T.dot(gradIn)/gradIn.shape[0]
         self.dj_db = np.sum(gradIn, axis=0, keepdims=True)/gradIn.shape[0]
         ## avoiding invalid value encountered in subtraction error at runtime by clipping the values
-        self.dj_dw = np.clip(self.dj_dw, -0.0001, 0.0001)
-        self.dj_db = np.clip(self.dj_db, -0.0001, 0.0001)
+        # self.dj_dw = np.clip(self.dj_dw, -0.0001, 0.0001)
+        # self.dj_db = np.clip(self.dj_db, -0.0001, 0.0001)
         self.weights = self.weights - (lr*self.dj_dw)
         self.baises = self.baises - (lr*self.dj_db)
 
@@ -262,7 +262,7 @@ class NegativeLikelihood():
 
     def gradient(self, y, yhat):
         epsilon = 0.0000001
-        return -np.divide(y, yhat + epsilon) + np.divide((1-y), (1-yhat + epsilon))
+        return - (y - yhat)/ (yhat * (1 - yhat) + epsilon)
 
 class CrossEntropyLoss():
     def __init__(self):
