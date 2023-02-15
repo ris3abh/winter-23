@@ -116,10 +116,6 @@ class SoftmaxLayer(Layer):
                     else:
                         jacobian[i][j][k] = -prevOut[i][j] * prevOut[i][k]
         return jacobian
-        # tensor = []
-        # for i in prevOut:
-        #     tensor.append(np.diag(i) - np.dot(i, i.T))
-        # return np.array(tensor)
             
 
     def backward(self, gradIn):
@@ -138,22 +134,7 @@ class LogisticSigmoid(Layer):
 
     def gradient(self):
         prevOut = self.getPrevOut()
-        jacobian = np.zeros((prevOut.shape[0], prevOut.shape[1], prevOut.shape[1]))
-        ## the output of the gradient of sigmoid function will be zero everywhere except the diagonal of the matrix
-        ## and will follow the following rule on the diagonal self.getPrevOut() * (1 - self.getPrevOut())
-        for i in range(prevOut.shape[0]):
-            for j in range(prevOut.shape[1]):
-                for k in range(prevOut.shape[1]):
-                    if j == k:
-                        jacobian[i][j][k] = prevOut[i][j] * (1 - prevOut[i][j])
-                    else:
-                        jacobian[i][j][k] = 0
-        ## since the activation functions gradient were diagonal matrices, we can turn them into single observation’s diagonal in a row, 
-        ## then we can reduce the size of the gradient to ∈ ℝ 1×𝐾 for a single observation, and ∈ ℝ 𝑁×𝐾 for multiple observations.
-        ## for now lets keep this as a tensor
-
-        return jacobian
-        # return self.getPrevOut() * (1 - self.getPrevOut())
+        return self.getPrevOut() * (1 - self.getPrevOut())
 
     def backward(self, gradIn):
         return np.multiply(gradIn, self.gradient())
@@ -172,7 +153,6 @@ class TanhLayer(Layer):
     def gradient(self):
         prevOut = self.getPrevOut()
         jacobian = np.zeros((prevOut.shape[0], prevOut.shape[1], prevOut.shape[1]))
-        ## the output of the gradient of tanH function will be zero everywhere except the diagonal of the matrix and follow this rule on diagonal  1 - np.square(self.getPrevOut())
         for i in range(prevOut.shape[0]):
             for j in range(prevOut.shape[1]):
                 for k in range(prevOut.shape[1]):
@@ -180,9 +160,6 @@ class TanhLayer(Layer):
                         jacobian[i][j][k] = 1 - np.square(self.getPrevOut()[i][j])
                     else:
                         jacobian[i][j][k] = 0
-        ## since the activation functions gradient were diagonal matrices, we can turn them into single observation’s diagonal in a row, 
-        ## then we can reduce the size of the gradient to ∈ ℝ 1×𝐾 for a single observation, and ∈ ℝ 𝑁×𝐾 for multiple observations.
-        ## for now lets keep this as a tensor
         return jacobian
         # return 1 - np.square(self.getPrevOut())
 
@@ -212,18 +189,14 @@ class fullyConnectedLayer(Layer):
 
     def gradient(self):
         prevOut = self.getPrevOut()
-        ## jacobian = np.zeros(prevOut[0], prevOut[1], prevOut[1])
         jacobian = []
         for i in range(len(prevOut)):
             jacobian.append(self.weights.T)
         return np.array(jacobian)
 
     def update_weights(self, gradIn, lr):
-        self.dj_dw = self.getPrevIn().T.dot(gradIn)/gradIn.shape[0]
-        self.dj_db = np.sum(gradIn, axis=0, keepdims=True)/gradIn.shape[0]
-        ## avoiding invalid value encountered in subtraction error at runtime by clipping the values
-        # self.dj_dw = np.clip(self.dj_dw, -0.0001, 0.0001)
-        # self.dj_db = np.clip(self.dj_db, -0.0001, 0.0001)
+        self.dj_db = np.sum(gradIn, axis = 0)/gradIn.shape[0]
+        self.dj_dw = np.dot(self.getPrevIn().T, gradIn)/gradIn.shape[0]
         self.weights = self.weights - (lr*self.dj_dw)
         self.baises = self.baises - (lr*self.dj_db)
 
@@ -239,8 +212,6 @@ class SquaredErrorLoss():
     def eval(self, y, yhat):
         self.y = y
         self.yhat = yhat
-        ## avoiding overflow error at runtime by clipping the values
-        yhat = np.clip(yhat, 0.0000001, 1 - 0.0000001)
         return np.mean((y - yhat)*(y - yhat))
 
     def gradient(self, y, yhat):

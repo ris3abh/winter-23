@@ -31,8 +31,6 @@ for i in range(epoch):
     dJdw1 = 2*(x1*w1 - 5*x2*w2 - 2)*x1
     dJdw2 = 2*(x1*w1 - 5*x2*w2 - 2)*(-5*x2)
 
-    ##print("epoch: ", i, "J: ", J, "w1: ", w1, "w2: ", w2)
-
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.plot(w1Array, w2Array, JArray)
