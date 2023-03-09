@@ -1,0 +1,16 @@
+For the following project all the code can be found in the "code" folder.
+1. "visualizingtheobjective.py" contains code for the second question of the assignment.
+2. "modelinitialization.py" contains the code for the third question of the assignent.
+3. "learningrate.py" contains the code for the fourth question of the assigment.
+4. "adam.py" contains the code for the fifth question of the assignment.
+5. "mutliclass.py" contains the code for the sixth question of the assignment.
+6. "layers.py" contains implementaion of all the layers and their respective methods.
+
+image folder contains all the graphs and plots which were obtained from the code. these are also incuded in the submission file.
+Deep_Learning_4.pdf contains the assignment soltuions for the theory questions and coding questions with all the plots.
+
+Libraries used:
+
+1. math
+2. numpy
+3. matplotlib
